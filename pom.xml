@@ -8,6 +8,8 @@
 	<name>callcenter</name>
 	<url>http://maven.apache.org</url>
 
+	<description>Small service to dispatch calls in a callcenter.</description>
+
 	<developers>
 		<developer>
 			<id>nicomeji</id>
