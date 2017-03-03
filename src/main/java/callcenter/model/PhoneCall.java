@@ -6,11 +6,16 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
+/**
+ * This model represents a phone call. Each call is comparable by it's end time,
+ * which is useful to know which employee has the recent call.
+ */
 @Data
 @EqualsAndHashCode(of = "id")
 public class PhoneCall implements Comparable<PhoneCall> {
     private final Long id;
     private final Date start;
+    private Date answered;
     private Date end;
 
     public PhoneCall(@NonNull Long id, @NonNull Date start) {
@@ -18,18 +23,13 @@ public class PhoneCall implements Comparable<PhoneCall> {
         this.id = id;
     }
 
-    public PhoneCall(@NonNull Long id, @NonNull Date start, Date end) {
-        this(id, start);
-        this.end = end;
-    }
-
     @Override
-    public int compareTo(PhoneCall call) {
+    public int compareTo(@NonNull PhoneCall call) {
         if (call.getEnd() == null) {
-            return 1;
+            return -1;
         }
         if (end == null) {
-            return -1;
+            return 1;
         }
         return call.getEnd().compareTo(end);
     }

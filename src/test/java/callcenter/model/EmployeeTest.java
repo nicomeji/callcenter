@@ -5,7 +5,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
-import java.util.Set;
+import java.util.Date;
 import java.util.TreeSet;
 
 import org.easymock.EasyMockSupport;
@@ -17,6 +17,12 @@ public class EmployeeTest extends EasyMockSupport {
         Employee juan = new Employee(1L, "Juan Perez", Employee.Type.EMPLOYEE);
         assertThat(juan.getId(), is(1L));
         assertThat(juan.getName(), is("Juan Perez"));
+    }
+
+    @Test(expected=NullPointerException.class)
+    public void employeeCannotBeCompareWithNull() {
+        Employee juan = new Employee(1L, "Juan Perez", Employee.Type.EMPLOYEE);
+        juan.compareTo(null);
     }
 
     @Test(expected = NullPointerException.class)
@@ -64,12 +70,27 @@ public class EmployeeTest extends EasyMockSupport {
     @Test
     public void employeesHaveMorePriority2() {
         Employee juan = new Employee(1L, "Juan", Employee.Type.EMPLOYEE);
-        Employee pedro = new Employee(2L, "Pedro", Employee.Type.SUPERVISOR);
-        Employee jorge = new Employee(3L, "Jorge", Employee.Type.DIRECTOR);
-        Set<Employee> orderedSet = new TreeSet<>();
+        Employee pablo = getEmployee(2L, "Pablo", new Date(), Employee.Type.EMPLOYEE);
+        Employee pedro = new Employee(3L, "Pedro", Employee.Type.SUPERVISOR);
+        Employee luis = getEmployee(4L, "Luis", new Date(), Employee.Type.SUPERVISOR);
+        Employee jorge = new Employee(5L, "Jorge", Employee.Type.DIRECTOR);
+        Employee carlos = getEmployee(6L, "Carlos", new Date(), Employee.Type.DIRECTOR);
+        TreeSet<Employee> orderedSet = new TreeSet<>();
         orderedSet.add(pedro);
+        orderedSet.add(carlos);
+        orderedSet.add(luis);
+        orderedSet.add(pablo);
         orderedSet.add(jorge);
         orderedSet.add(juan);
-        assertThat(orderedSet, contains(juan, pedro, jorge));
+        assertThat(orderedSet.first(), is(juan));
+        assertThat(orderedSet, contains(juan, pablo, pedro, luis, jorge, carlos));
+    }
+
+    private Employee getEmployee(Long id, String name, Date lastCallEndDate, Employee.Type type) {
+        Employee emp = new Employee(id, name, type);
+        PhoneCall call = new PhoneCall(id, lastCallEndDate);
+        call.setEnd(lastCallEndDate);
+        emp.setLastCall(call);
+        return emp;
     }
 }

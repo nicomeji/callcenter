@@ -7,42 +7,84 @@ import static org.hamcrest.Matchers.is;
 import java.util.Calendar;
 import java.util.Date;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import callcenter.model.Employee;
 import callcenter.model.PhoneCall;
+import callcenter.util.EmployeeQueue;
 
 public class EmployeeQueueTest {
     private EmployeeQueue queue;
 
     @Test
-    public void employeeWithMoreIdleTimeGoFirst() {
-        Employee juan = getEmployee(1L, getDateMinusDays(0));
-        Employee armando = getEmployee(2L, getDateMinusDays(1));
-        Employee carlos = getEmployee(3L, getDateMinusDays(2));
-        Employee martin = getEmployee(4L, getDateMinusDays(3));
-        Employee pablo = getEmployee(5L, getDateMinusDays(4));
+    public void employeeWithMoreIdleTimeGoFirst() throws InterruptedException {
+        Employee juan = new Employee(1L, "1", Employee.Type.EMPLOYEE);
+        Employee armando = getEmployee(2L, getDateMinusDays(0));
+        Employee carlos = getEmployee(3L, getDateMinusDays(1));
+        Employee martin = getEmployee(4L, getDateMinusDays(2));
+        Employee pablo = getEmployee(5L, getDateMinusDays(3));
 
-        queue.add(juan);
-        queue.add(pablo);
         queue.add(armando);
-        queue.add(martin);
         queue.add(carlos);
+        queue.add(pablo);
+        queue.add(martin);
+        queue.add(juan);
 
+        assertThat(queue.poll(), is(equalTo(juan)));
         assertThat(queue.poll(), is(equalTo(pablo)));
         assertThat(queue.poll(), is(equalTo(martin)));
         assertThat(queue.poll(), is(equalTo(carlos)));
         assertThat(queue.poll(), is(equalTo(armando)));
-        assertThat(queue.poll(), is(equalTo(juan)));
     }
 
     @Test
-    public void supervisorWithMoreIdleTimeGoFirst() {
-        Employee juan = getSupervisor(1L, getDateMinusDays(0));
-        Employee armando = getSupervisor(2L, getDateMinusDays(1));
-        Employee carlos = getSupervisor(3L, getDateMinusDays(2));
+    public void supervisorWithMoreIdleTimeGoFirst() throws InterruptedException {
+        Employee juan = new Employee(1L, "1", Employee.Type.SUPERVISOR);
+        Employee armando = getSupervisor(2L, getDateMinusDays(0));
+        Employee carlos = getSupervisor(3L, getDateMinusDays(1));
+        Employee martin = getSupervisor(4L, getDateMinusDays(2));
+        Employee pablo = getSupervisor(5L, getDateMinusDays(3));
+
+        queue.add(pablo);
+        queue.add(carlos);
+        queue.add(armando);
+        queue.add(juan);
+        queue.add(martin);
+
+        assertThat(queue.poll(), is(equalTo(juan)));
+        assertThat(queue.poll(), is(equalTo(pablo)));
+        assertThat(queue.poll(), is(equalTo(martin)));
+        assertThat(queue.poll(), is(equalTo(carlos)));
+        assertThat(queue.poll(), is(equalTo(armando)));
+    }
+
+    @Test
+    public void directorWithMoreIdleTimeGoFirst() throws InterruptedException {
+        Employee juan = new Employee(1L, "1", Employee.Type.DIRECTOR);
+        Employee armando = getDirector(2L, getDateMinusDays(0));
+        Employee carlos = getDirector(3L, getDateMinusDays(1));
+        Employee martin = getDirector(4L, getDateMinusDays(2));
+        Employee pablo = getDirector(5L, getDateMinusDays(3));
+
+        queue.add(armando);
+        queue.add(martin);
+        queue.add(juan);
+        queue.add(pablo);
+        queue.add(carlos);
+
+        assertThat(queue.poll(), is(equalTo(juan)));
+        assertThat(queue.poll(), is(equalTo(pablo)));
+        assertThat(queue.poll(), is(equalTo(martin)));
+        assertThat(queue.poll(), is(equalTo(carlos)));
+        assertThat(queue.poll(), is(equalTo(armando)));
+    }
+
+    @Test
+    public void supervisorGoIfNoEmployeeIsAvailable() throws InterruptedException {
+        Employee juan = getEmployee(1L, getDateMinusDays(0));
+        Employee armando = getEmployee(2L, getDateMinusDays(1));
+        Employee carlos = getEmployee(3L, getDateMinusDays(2));
         Employee martin = getSupervisor(4L, getDateMinusDays(3));
         Employee pablo = getSupervisor(5L, getDateMinusDays(4));
 
@@ -52,49 +94,6 @@ public class EmployeeQueueTest {
         queue.add(martin);
         queue.add(carlos);
 
-        assertThat(queue.poll(), is(equalTo(pablo)));
-        assertThat(queue.poll(), is(equalTo(martin)));
-        assertThat(queue.poll(), is(equalTo(carlos)));
-        assertThat(queue.poll(), is(equalTo(armando)));
-        assertThat(queue.poll(), is(equalTo(juan)));
-    }
-
-    @Test
-    public void directorWithMoreIdleTimeGoFirst() {
-        Employee juan = getDirector(1L, getDateMinusDays(0));
-        Employee armando = getDirector(2L, getDateMinusDays(1));
-        Employee carlos = getDirector(3L, getDateMinusDays(2));
-        Employee martin = getDirector(4L, getDateMinusDays(3));
-        Employee pablo = getDirector(5L, getDateMinusDays(4));
-
-        queue.add(juan);
-        queue.add(pablo);
-        queue.add(armando);
-        queue.add(martin);
-        queue.add(carlos);
-
-        Employee a = queue.poll();
-        assertThat(a, is(equalTo(pablo)));
-        assertThat(queue.poll(), is(equalTo(martin)));
-        assertThat(queue.poll(), is(equalTo(carlos)));
-        assertThat(queue.poll(), is(equalTo(armando)));
-        assertThat(queue.poll(), is(equalTo(juan)));
-    }
-
-    @Test
-    public void supervisorGoIfNoEmployeeIsAvailable() {
-        Employee juan = getEmployee(1L, getDateMinusDays(0));
-        Employee armando = getEmployee(2L, getDateMinusDays(1));
-        Employee carlos = getEmployee(3L, getDateMinusDays(2));
-        Employee martin = getSupervisor(4L, getDateMinusDays(3));
-        Employee pablo = getSupervisor(5L, getDateMinusDays(4));
-
-        queue.add(juan);
-        queue.add(pablo);
-        queue.add(armando);
-        queue.add(martin);
-        queue.add(carlos);
-
         assertThat(queue.poll(), is(equalTo(carlos)));
         assertThat(queue.poll(), is(equalTo(armando)));
         assertThat(queue.poll(), is(equalTo(juan)));
@@ -103,7 +102,7 @@ public class EmployeeQueueTest {
     }
 
     @Test
-    public void directorGoIfNoEmployeeIsAvailable() {
+    public void directorGoIfNoEmployeeIsAvailable() throws InterruptedException {
         Employee juan = getEmployee(1L, getDateMinusDays(0));
         Employee armando = getEmployee(2L, getDateMinusDays(1));
         Employee carlos = getEmployee(3L, getDateMinusDays(2));
@@ -124,7 +123,7 @@ public class EmployeeQueueTest {
     }
 
     @Test
-    public void directorGoIfNoSupervisorIsAvailable() {
+    public void directorGoIfNoSupervisorIsAvailable() throws InterruptedException {
         Employee juan = getSupervisor(1L, getDateMinusDays(0));
         Employee armando = getSupervisor(2L, getDateMinusDays(1));
         Employee carlos = getSupervisor(3L, getDateMinusDays(2));
@@ -145,7 +144,7 @@ public class EmployeeQueueTest {
     }
 
     @Test
-    public void employeeWithoutLastCallGoFirst() {
+    public void employeeWithoutLastCallGoFirst() throws InterruptedException {
         Employee juan = new Employee(1L, "1", Employee.Type.EMPLOYEE);
         Employee armando = getSupervisor(2L, getDateMinusDays(1));
         Employee carlos = getSupervisor(3L, getDateMinusDays(2));
@@ -166,7 +165,7 @@ public class EmployeeQueueTest {
     }
 
     @Test
-    public void general() {
+    public void general() throws InterruptedException {
         Employee emp1 = new Employee(1L, "1", Employee.Type.EMPLOYEE);
         Employee emp2 = getEmployee(2L, getDateMinusDays(0));
         Employee emp3 = getEmployee(3L, getDateMinusDays(1));
@@ -177,16 +176,16 @@ public class EmployeeQueueTest {
         Employee emp8 = getDirector(8L, getDateMinusDays(0));
         Employee emp9 = getDirector(9L, getDateMinusDays(1));
 
-        queue.add(emp9);
-        queue.add(emp1);
-        queue.add(emp7);
-        queue.add(emp5);
         queue.add(emp2);
+        queue.add(emp9);
+        queue.add(emp7);
+        queue.add(emp1);
+        queue.add(emp5);
         queue.add(emp8);
         queue.add(emp3);
         queue.add(emp4);
         queue.add(emp6);
-        
+
         assertThat(queue.poll(), is(equalTo(emp1)));
         assertThat(queue.poll(), is(equalTo(emp3)));
         assertThat(queue.poll(), is(equalTo(emp2)));
@@ -205,13 +204,8 @@ public class EmployeeQueueTest {
     }
 
     @Before
-    public void setUp () {
+    public void setUp() {
         queue = new EmployeeQueue();
-    }
-
-    @After
-    public void tearDown() {
-        queue.clear();
     }
 
     private Date getDateMinusDays(int minusDays) {
@@ -222,19 +216,25 @@ public class EmployeeQueueTest {
 
     private Employee getEmployee(Long id, Date lastCallEndDate) {
         Employee emp = new Employee(id, id.toString(), Employee.Type.EMPLOYEE);
-        emp.setLastCall(new PhoneCall(id, lastCallEndDate,lastCallEndDate));
+        PhoneCall call = new PhoneCall(id, lastCallEndDate);
+        call.setEnd(lastCallEndDate);
+        emp.setLastCall(call);
         return emp;
     }
 
     private Employee getSupervisor(Long id, Date lastCallEndDate) {
         Employee emp = new Employee(id, id.toString(), Employee.Type.SUPERVISOR);
-        emp.setLastCall(new PhoneCall(id, lastCallEndDate,lastCallEndDate));
+        PhoneCall call = new PhoneCall(id, lastCallEndDate);
+        call.setEnd(lastCallEndDate);
+        emp.setLastCall(call);
         return emp;
     }
 
     private Employee getDirector(Long id, Date lastCallEndDate) {
         Employee emp = new Employee(id, id.toString(), Employee.Type.DIRECTOR);
-        emp.setLastCall(new PhoneCall(id, lastCallEndDate,lastCallEndDate));
+        PhoneCall call = new PhoneCall(id, lastCallEndDate);
+        call.setEnd(lastCallEndDate);
+        emp.setLastCall(call);
         return emp;
     }
 }

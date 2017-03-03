@@ -5,11 +5,15 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 
+/**
+ * This model represents a employee. It's comparable according the business
+ * logic related with the preference to pick up a new phone call.
+ */
 @Data
 @EqualsAndHashCode(of = { "id" })
 public class Employee implements Comparable<Employee> {
     public enum Type {
-        EMPLOYEE(3), SUPERVISOR(2), DIRECTOR(1);
+        EMPLOYEE(1), SUPERVISOR(2), DIRECTOR(3);
 
         Type(int priority) {
             this.priority = priority;
@@ -31,14 +35,11 @@ public class Employee implements Comparable<Employee> {
     private PhoneCall lastCall;
 
     @Override
-    public int compareTo(Employee employee) {
-        if (employee == null || employee.getType().getPriority().compareTo(this.getType().getPriority()) < 0) {
-            return -1;
-        }
+    public int compareTo(@NonNull Employee employee) {
         if (employee.getType().equals(this.getType())) {
             return cmpCalls(employee.getLastCall());
         }
-        return 1;
+        return type.getPriority().compareTo(employee.getType().getPriority());
     }
 
     private int cmpCalls(PhoneCall call) {
