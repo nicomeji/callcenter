@@ -6,6 +6,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor.AbortPolicy;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.log4j.Logger;
+
 import callcenter.model.Employee;
 import callcenter.model.PhoneCall;
 import callcenter.util.EmployeeQueue;
@@ -19,6 +21,8 @@ import lombok.NonNull;
  */
 @Data
 public class Dispatcher implements AutoCloseable {
+    private static Logger logger = Logger.getLogger(Dispatcher.class);
+
     private ExecutorService executor = new ThreadPoolExecutor(10, 10, 10, TimeUnit.SECONDS, new LinkedBlockingQueue<>(30), new AbortPolicy());
 
     @NonNull
@@ -39,7 +43,7 @@ public class Dispatcher implements AutoCloseable {
             try {
                 processPhoneCall(phoneCall);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                logger.error("Unexpected interruption", e);
             }
         });
     }
